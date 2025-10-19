@@ -2,7 +2,6 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -43,7 +42,9 @@ impl<T> LinkedList<T> {
             end: None,
         }
     }
+}
 
+impl<T: Default + std::cmp::PartialOrd> LinkedList<T> {
     pub fn add(&mut self, obj: T) {
         let mut node = Box::new(Node::new(obj));
         node.next = None;
@@ -69,13 +70,60 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
-	{
+
+	pub fn merge(list_a: LinkedList<T>, list_b: LinkedList<T>) -> Self {
+        if list_a.length == 0 {
+            return list_b;
+        }
+        if list_b.length == 0 {
+            return list_a;
+        }
+
+        let mut head = Node::new(T::default()); //dummy head
+        let mut tail: NonNull<Node<T>> = unsafe { NonNull::new_unchecked(&mut head) };
+
+        let mut current_a = list_a.start;
+        let mut current_b = list_b.start;
+
+        while current_a.is_some() && current_b.is_some() {
+            let a_ref = unsafe { current_a.unwrap().as_ref() };
+            let b_ref = unsafe { current_b.unwrap().as_ref() };
+
+            if a_ref.val <= b_ref.val {
+                unsafe {
+                    (*tail.as_ptr()).next = current_a;
+                    tail = current_a.unwrap();
+                    current_a = a_ref.next;
+                }
+            } else {
+                unsafe {
+                    (*tail.as_ptr()).next = current_b;
+                    tail = current_b.unwrap();
+                    current_b = b_ref.next;
+                }
+            }
+        }
+        if current_a.is_some() {
+            unsafe {
+                (*tail.as_ptr()).next = current_a;
+            }
+        } else if current_b.is_some() {
+            unsafe {
+                (*tail.as_ptr()).next = current_b;
+            }
+        }
+
+        while unsafe { (*tail.as_ptr()).next.is_some() } {
+            unsafe {
+                tail = (*tail.as_ptr()).next.unwrap();
+            }
+        }
+
 		//TODO
 		Self {
             length: 0,
-            start: None,
-            end: None,
+            start: head.next,
+            end: Some(tail),
         }
 	}
 }

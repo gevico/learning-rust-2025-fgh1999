@@ -3,7 +3,6 @@
 	This problem requires you to implement a basic interface for a binary tree
 */
 
-//I AM NOT DONE
 use std::cmp::Ordering;
 use std::fmt::Debug;
 
@@ -50,13 +49,29 @@ where
 
     // Insert a value into the BST
     fn insert(&mut self, value: T) {
-        //TODO
+        match self.root {
+            None => {
+                self.root = Some(Box::new(TreeNode::new(value)));
+            }
+            Some(ref mut node) => {
+                node.insert(value);
+            }
+        }
     }
 
     // Search for a value in the BST
     fn search(&self, value: T) -> bool {
-        //TODO
-        true
+        fn search_recursive<T: Ord>(node: &Option<Box<TreeNode<T>>>, value: T) -> bool {
+            match node {
+                None => false,
+                Some(n) => match value.cmp(&n.value) {
+                    Ordering::Equal => true,
+                    Ordering::Less => search_recursive(&n.left, value),
+                    Ordering::Greater => search_recursive(&n.right, value),
+                },
+            }
+        }
+        search_recursive(&self.root, value)
     }
 }
 
@@ -66,7 +81,31 @@ where
 {
     // Insert a node into the tree
     fn insert(&mut self, value: T) {
-        //TODO
+        match value.cmp(&self.value) {
+            Ordering::Less => {
+                match self.left {
+                    None => {
+                        self.left = Some(Box::new(TreeNode::new(value)));
+                    }
+                    Some(ref mut node) => {
+                        node.insert(value);
+                    }
+                }
+            }
+            Ordering::Greater => {
+                match self.right {
+                    None => {
+                        self.right = Some(Box::new(TreeNode::new(value)));
+                    }
+                    Some(ref mut node) => {
+                        node.insert(value);
+                    }
+                }
+            }
+            Ordering::Equal => {
+                // 如果值已存在,不做任何操作(避免重复)
+            }
+        }
     }
 }
 
@@ -121,6 +160,4 @@ mod tests {
             None => panic!("Root should not be None after insertion"),
         }
     }
-}    
-
-
+}
